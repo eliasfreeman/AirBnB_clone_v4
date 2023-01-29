@@ -1,5 +1,12 @@
 const $ = window.$;
 $(document).ready(function () {
+  /**
+   * Task 2:
+   * Listen for changes on each INPUT checkbox tag:
+   * - if the checkbox is checked, you must store the Amenity ID in a variable (dictionary or list)
+   * - if the checkbox is unchecked, you must remove the Amenity ID from the variable
+   * - update the H4 tag inside the DIV Amenities with the list of Amenities checked
+   **/
   const myAmenities = {};
   const myStates = {};
   const myCities = {};
@@ -52,7 +59,7 @@ $(document).ready(function () {
    * Request http://0.0.0.0:5001/api/v1/status/:
    * - If in the status is “OK”, add the class available to the DIV#api_status
    * - Otherwise, remove the class available to the DIV#api_status
-   * **/
+   **/
   const apiStatus = $('DIV#api_status');
   $.ajax('http://0.0.0.0:5001/api/v1/status/').done(function (data) {
     if (data.status === 'OK') {
@@ -82,6 +89,7 @@ $(document).ready(function () {
     });
     placesSearch.done(function (data) {
       for (let i = 0; i < data.length; i++) {
+        const placeId = data[i].id;
         const placeName = data[i].name;
         const priceByNight = data[i].price_by_night;
         const maxGuest = data[i].max_guest;
@@ -115,6 +123,9 @@ $(document).ready(function () {
         article.append(information);
         const description = $("<div class='description'></div>").html(desc);
         article.append(description);
+        const reviews = $("<div class='reviews'><span>show</span><h2>Reviews</h2><ul></ul></div>");
+        reviews.find('span').attr('data-id', placeId);
+        article.append(reviews);
         $('SECTION.places').append(article);
       }
     });
@@ -126,4 +137,30 @@ $(document).ready(function () {
     $('SECTION.places').empty();
     search(myAmenities, myStates, myCities);
   });
+
+  setTimeout(function () {
+    $('.reviews span').click(function () {
+      if ($(this).text() === 'show') {
+        const placeId = $(this).attr('data-id');
+        const url = 'http://0.0.0.0:5001/api/v1/places/' + placeId + '/reviews';
+        const myReviews = $.ajax(url);
+        const review = $(this);
+        let myUser;
+        myReviews.done(function (data) {
+          for (let i = 0; i < data.length; i++) {
+            myUser = $.ajax('http://0.0.0.0:5001/api/v1/users/' + data[i].user_id);
+            myUser.done(function (userData) {
+              let date = new Date(data[i].created_at);
+              date = date.getDate() + 'th ' + ' ' + date.toLocaleString('default', { month: 'long' }) + ' ' + date.getFullYear();
+              review.parent().find('ul').append('<li><h2>From ' + userData.first_name + ' ' + userData.last_name + ' the ' + date + '</h2><p>' + data[i].text + '</p></li>');
+            });
+          }
+        });
+        $(this).text('hide');
+      } else {
+        $(this).text('show');
+        $(this).parent().find('ul').empty();
+      }
+    });
+  }, 1000);
 });

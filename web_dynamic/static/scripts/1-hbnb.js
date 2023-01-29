@@ -1,36 +1,22 @@
-/*
-$(document).ready(function() {
-  let amenities = {};
-  $(document).on('change', "input[type='checkbox']", function () {
-    chkbx = $(this);
-    if (chkbx.checked) {
-      amenity_id = chkbx.data('id');
-      amenity_name = chkbx.data('name');
-      amenities['amenity_name'] = amenuty_id;
-      console.log(amenities);
-      console.log(amenity_id);
-    } else {
-      amenity_name = chkbx.data('name');
-      delete amenities[amenity_name]
-    };
-    $('.amenities h4').text(Object.values(amenities).join(','));
-  });
-});
-*/
+const $ = window.$;
 $(document).ready(function () {
-  let checkedAmenities = {};
-  $(document).on('change', "input[type='checkbox']", function () {
+  const myAmenities = {};
+  let myList = [];
+  const checkbox = $('.amenities input[type="checkbox"]');
+  checkbox.prop('checked', false);
+  checkbox.change(function () {
+    const dataId = $(this).attr('data-id');
+    const dataName = $(this).attr('data-name');
     if (this.checked) {
-      checkedAmenities[$(this).data('id')] = $(this).data('name');
+      myAmenities[dataId] = dataName;
     } else {
-      delete checkedAmenities[$(this).data('id')];
+      delete (myAmenities[dataId]);
     }
-    console.log(checkedAmenities);
-    let lst = Object.values(checkedAmenities);
-    if (lst.length > 0) {
-      $('div.amenities h4').text(Object.values(checkedAmenities).join(', '));
-    } else {
-      $('div.amenities h4').html('&nbsp;');
+    for (const key in myAmenities) {
+      myList.push(myAmenities[key]);
     }
+    const output = myList.join(', ');
+    $('div.amenities > h4').text(output);
+    myList = [];
   });
 });
